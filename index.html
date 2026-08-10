@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>El color característico de los elementos: absorción (sales / vidrio) y emisión (llama / espectro)</title>
+<style>
+  :root{
+    --bg:#0b0d12;
+    --bg2:#12151c;
+    --ink:#e9ecf1;
+    --dim:#8b93a3;
+    --line:#242a35;
+    --accent:#ffd400;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0;
+    background:radial-gradient(ellipse at 20% 0%, #141822 0%, var(--bg) 55%);
+    color:var(--ink);
+    font-family: 'Courier New', ui-monospace, Menlo, Consolas, monospace;
+    padding:28px 16px 60px;
+  }
+  h1{
+    font-family: Georgia, 'Times New Roman', serif;
+    font-weight:600;
+    font-size:22px;
+    letter-spacing:.3px;
+    margin:0 0 4px;
+    color:var(--ink);
+  }
+  .sub{
+    color:var(--dim);
+    font-size:13px;
+    max-width:820px;
+    line-height:1.55;
+    margin:0 0 18px;
+  }
+  .sub b{color:var(--ink);font-weight:600;}
+
+  .wrap{max-width:1180px;margin:0 auto;}
+
+  .legend{
+    display:flex; flex-wrap:wrap; gap:14px;
+    font-size:11px; color:var(--dim);
+    margin-bottom:18px;
+    border:1px solid var(--line);
+    border-radius:8px;
+    padding:10px 14px;
+    background:var(--bg2);
+  }
+  .legend .item{display:flex;align-items:center;gap:6px;}
+  .swatch{width:13px;height:13px;border-radius:3px;display:inline-block;}
+  .cell.conf-none{background:repeating-linear-gradient(45deg,#20242c,#20242c 4px,#171a20 4px,#171a20 8px); border:1px solid var(--line);}
+  .cell.conf-ausente{background:#000000; border:1px solid #2a2a2a;}
+  .swatch.conf-none{background:repeating-linear-gradient(45deg,#20242c,#20242c 4px,#171a20 4px,#171a20 8px); border:1px solid var(--line);}
+  .swatch.conf-ausente{background:#000000; border:1px solid #2a2a2a;}
+  .conf-ausente .z, .conf-ausente .sym{color:#e8e9ec !important;}
+  .cell.colored{border:1px solid rgba(0,0,0,.25);}
+
+  .mech-mark{
+    position:absolute; top:1px;
+    width:12px; height:12px;
+    border-radius:50%;
+    background:rgba(8,8,12,.82);
+    display:flex; align-items:center; justify-content:center;
+    font-size:7.5px; font-weight:800;
+    line-height:1;
+  }
+  .mech-mark.left{left:1px;}
+  .mech-mark.right{right:1px;}
+  .mech-A{color:#c2aef7;}
+  .mech-E{color:#ffb066;}
+
+  .grid{
+    display:grid;
+    grid-template-columns: repeat(18, minmax(0,1fr));
+    gap:4px;
+    margin-bottom:10px;
+  }
+  .gap-row{height:10px;grid-column:1/-1;}
+
+  .cell{
+    position:relative;
+    aspect-ratio:1/1;
+    border-radius:5px;
+    padding:3px 4px;
+    cursor:pointer;
+    transition:transform .12s ease;
+    display:flex;flex-direction:column;justify-content:space-between;
+    font-size:10px;
+    color:#0b0d12;
+    background:repeating-linear-gradient(45deg,#20242c,#20242c 4px,#171a20 4px,#171a20 8px);
+    border:1px solid var(--line);
+  }
+  .cell:hover{transform:translateY(-2px) scale(1.05); z-index:5; box-shadow:0 6px 18px rgba(0,0,0,.5);}
+  .cell.empty{visibility:hidden;}
+  .z{font-size:8px;opacity:.75;align-self:flex-start;}
+  .sym{font-size:14px;font-weight:700;align-self:center;}
+  .cell.nodata .z, .cell.nodata .sym{color:var(--dim);}
+
+  #tooltip{
+    position:fixed;
+    max-width:280px;
+    background:#161a22;
+    border:1px solid #333a48;
+    border-radius:10px;
+    padding:12px 14px;
+    font-size:12px;
+    line-height:1.5;
+    color:var(--ink);
+    box-shadow:0 10px 30px rgba(0,0,0,.6);
+    display:none;
+    z-index:50;
+    pointer-events:none;
+  }
+  #tooltip .t-name{font-family:Georgia,serif;font-size:15px;font-weight:700;margin-bottom:2px;}
+  #tooltip .t-color{font-size:11px;color:var(--accent);margin-bottom:6px;}
+  #tooltip .t-note{color:#c3c9d4;}
+  #tooltip .t-src{color:var(--dim);font-size:10px;margin-top:6px;border-top:1px solid var(--line);padding-top:6px;}
+
+  .foot{
+    max-width:820px;
+    margin-top:22px;
+    font-size:11.5px;
+    color:var(--dim);
+    line-height:1.6;
+    border-top:1px solid var(--line);
+    padding-top:14px;
+  }
+  .foot b{color:var(--ink);}
+  .lant-label{grid-column:1/4; display:flex; align-items:center; justify-content:flex-end; padding-right:6px; font-size:9px; color:var(--dim);}
+
+  #exportBtn{
+    position:absolute;
+    top:0; right:0;
+    width:34px; height:34px;
+    border-radius:8px;
+    background:var(--bg2);
+    border:1px solid var(--line);
+    color:var(--ink);
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer;
+    transition:background .15s ease, transform .15s ease;
+  }
+  #exportBtn:hover{background:#1b2029; transform:translateY(-1px);}
+  #exportBtn:active{transform:translateY(0);}
+  #exportBtn:disabled{opacity:.5; cursor:wait;}
+  .wrap{position:relative;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <button id="exportBtn" title="Descargar como PNG" aria-label="Descargar como PNG">
+    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2Z"/>
+      <path d="M17 21v-8H7v8"/>
+      <path d="M7 3v5h8"/>
+    </svg>
+  </button>
+  <div id="capture-area">
+  <h1>El color característico de los elementos: absorción (sales / vidrio) y emisión (llama / espectro) - Mario Rodríguez Peña</h1>
+  <p class="sub">Cada casilla muestra un color de <b>absorción</b> (vidrio/óxido/sal, etiqueta "A") o de <b>emisión</b> (llama/espectro, etiqueta "E"). Leyenda y fuentes al final. Pasa el cursor o toca una casilla.</p>
+
+  <div class="legend">
+    <div class="item"><span class="swatch conf-ausente"></span>Color confirmado como ausente (incoloro por electrónica)</div>
+    <div class="item"><span class="swatch conf-none"></span>Sin dato fiable</div>
+    <div class="item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(8,8,12,.82);color:#c2aef7;font-weight:800;font-size:9px;">A</span>Absorción (color de vidrio/óxido/sal)</div>
+    <div class="item"><span style="display:inline-flex;align-items:center;justify-content:center;width:14px;height:14px;border-radius:50%;background:rgba(8,8,12,.82);color:#ffb066;font-weight:800;font-size:9px;">E</span>Emisión (llama, espectro, quimioluminiscencia)</div>
+    <div class="item">Ambas marcas a la vez = coinciden los dos mecanismos (cobre y cerio)</div>
+  </div>
+
+  <div class="grid" id="grid"></div>
+  </div>
+
+  <div class="foot" id="foot"></div>
+</div>
+
+<div id="tooltip"></div>
+
+<script>
+// -------- DATOS --------
+// period, group (1-18), z, sym, name, color(hex or null), colorLabel, confidence ('alta'|'media'|'baja'|'none'), note, source
+const els = [
+[1,1,1,'H','Hidrógeno','#ff5c8a','rosa-rojizo (línea H-alfa, 656 nm, serie de Balmer)','media','El tubo de descarga de H2 se ve magenta/rosado por la mezcla de sus líneas visibles (roja, azul-verde, violeta). La llama de combustión de H2 es en cambio azul pálida (fenómeno distinto).','Serie de Balmer; Museo de Ciencia (espectroscopia atómica)'],
+[1,18,2,'He','Helio','#ffb07a','naranja-rosado (tubo de descarga)','alta','Color muy consistente entre fuentes de iluminación de gas noble: naranja-rosado o "durazno".','Múltiples fuentes técnicas sobre tubos de descarga de gases nobles'],
+[2,1,3,'Li','Litio','#d81e3e','carmín / rojo intenso','alta','671 nm. Uno de los ensayos a la llama más citados en química analítica.','CRC Handbook of Chemistry and Physics; CAMEO-MFA'],
+[2,2,4,'Be','Berilio','#eeeeee','blanco (señal muy débil)','baja','Solo se aprecia color a temperatura muy alta y es poco distintivo. La otra vía (absorción) tampoco da color: el Be2+ es d0 (sin electrones d, como Al3+ o Sc3+), así que el BeO también es blanco. Ambos mecanismos dan blanco.','CAMEO-MFA (Materials Handbook / CRC Handbook)'],
+[2,13,5,'B','Boro','#00a651','verde brillante','alta','Ensayo clásico: el ácido bórico en etanol arde con llama verde brillante, por quimioluminiscencia genuina de la molécula BO2 excitada (no incandescencia de partículas), según estudios de espectroscopia de llama.','CAMEO-MFA; CRC Handbook; ScienceDirect (mecanismo BO2* confirmado)'],
+[2,14,6,'C','Carbono','#2ec4a6','verde azulado (bandas de Swan del C2 y radical CH en la zona azul de la llama)','alta','El naranja de una vela o una hoguera no es una línea de emisión, sino incandescencia térmica del hollín (radiación de cuerpo negro), un mecanismo distinto al resto de esta tabla. Las líneas/bandas de emisión reales del carbono en una llama están en la zona azul-verde de la base: el radical C2 excitado emite las "bandas de Swan" a 474, 516 y 563 nm (verde-azulado), y el radical CH emite bandas a 314, 390 y 432 nm (violeta-azul). El color amarillo-rojizo se debe a la incandescencia del hollín; el verde-azulado, a la quimioluminiscencia real de la llama, coherente con el criterio de esta tabla.','ScienceDirect (Improved colour-modelled CH* and C2* measurement); stevesopenlab.org (bandas de Swan del C2); patente US H1925 (bandas de CH y C2 en llama de hidrocarburo)'],
+[2,15,7,'N','Nitrógeno','#6a3fa0','azul-violeta / púrpura (rosa-rojo oscuro en el borde inferior, a baja altitud)','alta','Coinciden dos fuentes independientes: en la aurora boreal, el nitrógeno molecular produce el característico borde azul-violeta y a veces rosa/rojo oscuro de las cortinas verdes; y en tubos de descarga de laboratorio (venta educativa), el nitrógeno gaseoso da un color descrito de forma consistente como "violeta rosado" o "púrpura grisáceo".','NASA/NPS "The Colors of the Aurora"; Agencia Espacial Canadiense; tubos de espectro de nitrógeno (Flinn Scientific, repairfaq.org)'],
+[2,16,8,'O','Oxígeno','#3fd66b','verde (el más común, a 90-150 km); rojo a mayor altitud (300-400 km)','alta','Es la causa directa de los dos colores más característicos de la aurora boreal: el verde (línea de 557,7 nm) es, con diferencia, el color de aurora más frecuente, y el rojo (630,0 nm) aparece en las cortinas más altas y en tormentas solares intensas. Ambos son líneas de emisión del oxígeno atómico.','NASA/National Park Service "The Colors of the Aurora"; Agencia Espacial Canadiense; Space.com'],
+[2,17,9,'F','Flúor','','','ausente','No hay ensayo a la llama ni tubo de descarga: el flúor es tan reactivo que ataca el propio vidrio del tubo, por eso ni Flinn Scientific ni Arbor Scientific lo ofrecen junto a Cl2/Br2/I2. Los fluoruros simples (NaF, CaF2, MgF2...) son consistentemente incoloros/blancos en toda la bibliografía, siendo el F- el haluro "más duro" y menos propenso a dar bandas de transferencia de carga visibles — de ahí su clasificación como color confirmado como ausente.','Catálogos de tubos de espectro (ausencia de flúor); química de fluoruros de metales alcalinos y alcalinotérreos, consistentemente incoloros'],
+[2,18,10,'Ne','Neón','#ff4b1f','rojo-anaranjado','alta','El color más icónico y consistente de todos: el "rojo neón" de los carteles luminosos originales.','Múltiples fuentes técnicas de iluminación de gas'],
+[3,1,11,'Na','Sodio','#ffd400','amarillo (línea D, 589 nm)','alta','La línea D del sodio es tan intensa que enmascara casi cualquier otro color en un ensayo a la llama.','CRC Handbook; CAMEO-MFA'],
+[3,2,12,'Mg','Magnesio','#ffffff','blanco brillante (suma de emisión real azul-verde de Mg y MgO + continuo térmico débil)','alta','Un estudio del espectro real de la llama (ScienceDirect) confirma que el blanco no es solo incandescencia: hay un continuo térmico débil, pero la "brillantez" característica se debe a fuertes emisiones cuantizadas azul-verdes de átomos de Mg y moléculas de MgO excitadas por quimiexcitación — coherente con líneas de emisión reales, a diferencia del hollín del carbono. Por absorción, el Mg2+ es s-block sin electrones d, así que el MgO también es blanco. Ambos mecanismos dan blanco, aunque el de emisión es un blanco "activo" (líneas reales), no solo incandescencia.','ScienceDirect, "The anomalous brightness of magnesium-air flames" (Sarner et al.)'],
+[3,13,13,'Al','Aluminio','#eeeeee','blanco (señal débil, solo a T° muy alta)','baja','Color poco distintivo salvo a temperaturas de llama muy elevadas. Por absorción tampoco da color: el Al3+ es d0, así que el Al2O3 puro (corindón) también es blanco/incoloro (solo con impurezas traza da zafiro azul o rubí rojo, color de las impurezas, no del aluminio). Ambos mecanismos dan blanco.','CAMEO-MFA (Materials Handbook / CRC Handbook)'],
+[3,14,14,'Si','Silicio','#a8c8e8','azul pálido / blanco-azulado (quimioluminiscencia real de SiO*, SiH*, OH*)','baja','Mismo patrón que el carbono: el silicio al arder SÍ produce un color, pero hay que separar dos fenómenos. Un estudio de combustión de silano (SiH4) documenta que la llama es azul-blanquecina pálida a baja concentración (con bandas de emisión reales de SiO*, SiH* y OH*, detectadas por espectroscopía), pero vira a naranja intenso a mayor concentración — y ese naranja se atribuye explícitamente a incandescencia de cuerpo negro de partículas de SiO2, el mismo mecanismo descartado en el carbono, no a una línea de emisión. Un estudio de gotas de silicio ardiendo confirma que su brillo está "dominado por radiación de cuerpo negro". Casi toda la emisión molecular real (SiO*, Si*) cae además en el ultravioleta, invisible al ojo. Por eso se marca aquí el azul pálido (lo único que sí es emisión real y visible) con confianza baja, y se descarta el naranja habitual de la sílice al rojo vivo.','ScienceDirect, "Silane combustion in an opposed jet diffusion flame" (color según concentración, naranja = cuerpo negro); arXiv 2509.24070 (combustión de gotas de silicio, emisión "dominada por radiación de cuerpo negro")'],
+[3,15,15,'P','Fósforo','#7fd9a8','verde pálido / verde-azulado (quimioluminiscencia real de PO y HPO)','media','El blanco de la combustión completa del fósforo blanco es sobre todo continuo térmico más humo blanco de P4O10 (que es luz dispersada, no emisión, igual que una nube), no líneas limpias. Las bandas reales de quimioluminiscencia (PO, HPO, P2), estudiadas en espectroscopía de precisión, se concentran sobre todo entre 450-650 nm, en la zona verde-azulada — coincide con el resplandor verdoso que describió Hennig Brand en 1669 al descubrirlo, y que dio nombre al elemento ("portador de luz"). Confianza media porque esas bandas reales son débiles, superpuestas a un continuo más fuerte.','Van Zee & Khan, "Transient emitting species in phosphorus chemiluminescence" (J. Chem. Phys.); Vosburgh, "Spectral study of the phosphorus glow" (Can. J. Phys.)'],
+[3,16,16,'S','Azufre','#4d79c7','azul','alta','El azufre elemental arde con llama azul característica, por quimioluminiscencia real de moléculas de S2/SO2 excitadas: arde limpiamente hasta SO2 gaseoso sin formar partículas incandescentes como el hollín, así que, a diferencia del naranja del carbono, este azul es coherente con el criterio de línea/banda de emisión.','CAMEO-MFA; CRC Handbook; ScienceDirect (mecanismo de quimioluminiscencia del S2 en llama)'],
+[3,17,17,'Cl','Cloro','#e8e8e0','blanquecino / sin color dominante claro (emisión: tubo de descarga con muchas líneas)','baja','El color del gas Cl2 (amarillo-verdoso, origen del nombre del elemento) es el color del elemento puro, no de una sal — igual que el cobre metálico es rojizo mientras que sus sales son azules — así que no cuenta como absorción según el criterio de esta tabla. Las sales de cloro (cloruros: NaCl, KCl, CaCl2...) son consistentemente incoloras/blancas: el Cl- no tiene transiciones d-d ni f-f disponibles, y lo mismo ocurre con el flúor y el bromo, cuyos haluros simples también son blancos. Por emisión, el tubo de descarga de Cl2 emite muchas líneas repartidas por el visible que, sumadas, dan blanquecino — un dato válido pero poco informativo, similar a Be/Al/Mg/Kr.','atomic-spectra.net (espectro de emisión de Cl2 en tubo de descarga); haluros de metales alcalinos, consistentemente incoloros'],
+[3,18,18,'Ar','Argón','#b48ee0','violeta / lavanda','alta','Color muy reproducible en tubos de descarga: violeta-lavanda (a veces descrito azul pálido).','Múltiples fuentes técnicas de iluminación de gas noble'],
+[4,1,19,'K','Potasio','#a06cd5','lila / violeta','alta','766 nm; se observa mejor a través de vidrio de cobalto para filtrar el amarillo del sodio.','CRC Handbook; CAMEO-MFA'],
+[4,2,20,'Ca','Calcio','#ff5a1f','naranja-rojizo (rojo ladrillo)','alta','Ensayo a la llama muy usado en química de enseñanza.','CRC Handbook; CAMEO-MFA'],
+[4,3,21,'Sc','Escandio','','','ausente','El escandio(III), Sc3+, no tiene electrones d disponibles (configuración d0, como su vecino Y3+): Sc2O3 y sus sales son blancas de forma consistente. Color confirmado como ausente, no falta de dato. En emisión, un estudio técnico (OSTI/Curry) confirma que el escandio sí emite líneas espectrales reales e intensas en llama de acetileno-oxígeno rica en combustible (más de 1200 líneas medidas junto a las tierras raras), pero ninguna fuente describe qué color resulta a simple vista: son tablas para espectrómetro, no observación visual como con el sodio.','Curry, "Analytical Applications of the Flame Spectra of the Rare Earth Elements and Scandium" (OSTI)'],
+[4,4,22,'Ti','Titanio','#7a4fa0','violeta (Ti3+, un solo electrón d); su forma más común, TiO2, es en cambio blanca (Ti4+, d0)','media','El TiCl3 y el ion [Ti(H2O)6]3+ son violeta intenso por la única transición d-d posible con un solo electrón d. Es un caso clásico de libro de texto para explicar por qué el color depende del estado de oxidación: el dióxido de titanio (Ti4+, sin electrones d) que se usa como pigmento blanco es completamente incoloro.','Wikipedia (Titanium(III) chloride); DocBrown Chemistry (apuntes de química inorgánica)'],
+[4,5,23,'V','Vanadio','#e8b83c','amarillo-naranja (V5+, V2O5, el estado más común); pero cambia a azul (V4+), verde (V3+) y violeta (V2+) según el estado de oxidación','alta','Caso histórico notable: Andrés Manuel del Río lo descubrió en 1801 y lo llamó primero "pancromio" (todos los colores) y después "eritronio" (del griego "rojo") porque sus sales alcalinas se ponían rojas al calentarlas con ácido. Redescubierto en 1830, se renombró "vanadio" por Vanadis, diosa nórdica, precisamente por lo vistoso de sus compuestos. Es célebre en química inorgánica el experimento del "arcoíris de vanadio", que muestra sus 4 colores de estado de oxidación en una sola disolución.','Wikipedia en español (Vanadio, historia de Del Río); Chemicool; ChemTalk; Chemistry LibreTexts ("Vanadium Rainbow")'],
+[4,6,24,'Cr','Cromo','#2e8b57','verde (a veces hasta casi negro en alta concentración)','alta','El óxido de cromo(III), Cr2O3, es uno de los colorantes verdes más clásicos e intensos en vidrio, cerámica y pigmentos (verde cromo/verde óxido); coincide con el color del ion Cr3+ en minerales como la esmeralda y el rubí (sí, el rojo del rubí también lo da el Cr3+ en otra matriz). El ensayo a la llama en sí es débil, por eso se prioriza aquí el color del ion en sólidos.','Química industrial de colorantes de vidrio/cerámica; color del Cr3+ en gemología (esmeralda, rubí)'],
+[4,7,25,'Mn','Manganeso','#8e44ad','púrpura amatista (Mn3+)','alta','Fue el primer colorante deliberado de la historia: el vidrio romano y egipcio antiguo se coloreaba de púrpura amatista con manganeso ("jabón de vidriero"). El Mn2+ por sí solo da solo un amarillo-verdoso muy débil en ensayo a la llama; el MnO2 (Mn4+) da negro.','Historia de la coloración del vidrio; FTLOScience; CAMEO-MFA (para el dato secundario débil de Mn2+)'],
+[4,8,26,'Fe','Hierro','#a0421f','rojo-marrón (Fe2O3, herrumbre) — color de absorción','alta','El hierro tiene dos colores reales y distintos, según el mecanismo. Por EMISIÓN (arco/chispa), su espectro es tan extraordinariamente denso —miles de líneas casi continuas entre UV e IR cercano, usado como patrón de calibración en espectroscopía astronómica— que, sumado, da una luz blanquecina sin color dominante (igual que el cloro): un dato técnicamente válido pero visualmente inútil. Por ABSORCIÓN, el óxido Fe2O3 (herrumbre/hematita) da un rojo-marrón intenso, inconfundible y universalmente reconocido (el mismo tono que colorea Marte). Como el resultado de emisión es blanco/sin color útil, se prioriza aquí la absorción, marcada como tal con el indicador "A".','Kiess, Rubin & Moore, "Faint Lines in the Arc Spectrum of Iron (Fe I)", J. Res. Natl. Bur. Stand. 65A, 1 (1961); Britannica (Iron oxide)'],
+[4,9,27,'Co','Cobalto','#0047ab','azul cobalto intenso','alta','Uno de los colorantes más potentes y reconocibles que existen: con menos del 1% de óxido de cobalto ya se obtiene un azul intenso ("azul cobalto"), usado en vidrio y cerámica desde hace siglos (vidrio de Bristol, porcelana china tradicional). El ensayo a la llama simple es débil; el color fuerte viene del ion en la matriz sólida.','Química industrial del vidrio y cerámica (colorantes de óxidos metálicos)'],
+[4,10,28,'Ni','Níquel','#6a5189','azul, violeta o negro (muy dependiente de la matriz de vidrio)','baja','A diferencia de casi todos los demás, el color del níquel en vidrio cambia mucho según la composición del vidrio base: puede dar azul, violeta o incluso negro. Se representa aquí un violeta-azulado medio, pero el dato real es poco predecible sin conocer la matriz.','Química industrial de colorantes de vidrio (glasstips.blogspot; FTLOScience)'],
+[4,11,29,'Cu','Cobre','#16c98d','verde esmeralda / turquesa (Cu2+, coincide con la llama y con el vidrio); rojo oscuro (Cu2O, "cobre rubí")','alta','El caso "A+E" por excelencia de esta tabla: el color de la llama (emisión) y el color del vidrio/sal (absorción) coinciden casi exactamente — verde intenso, o azul-verdoso turquesa si hay cloruro/bromuro. El óxido cuproso (Cu2O) produce además un llamativo "vidrio rubí de cobre" rojo oscuro (ese sí, solo absorción). No es una ley general: cromo y cobalto, por ejemplo, tienen absorción intensa pero emisión débil y sin relación de color.','CAMEO-MFA; CRC Handbook; FTLOScience (vidrio rubí de cobre)'],
+[4,12,30,'Zn','Zinc','#b7e0d3','blanco verdoso pálido','media','Señal poco intensa pero documentada.','CAMEO-MFA'],
+[4,13,31,'Ga','Galio','#6a3fa0','violeta','alta','Lecoq de Boisbaudran descubrió el galio en 1875 por dos líneas violeta muy marcadas en el espectro de chispa de una blenda de zinc, una de ellas descrita como "especialmente brillante" a unos 417 nm — el mismo tipo de evidencia de descubrimiento espectroscópico que en indio (azul) y talio (verde).','Scientific American (1878, relato original); Encyclopedia.com y Chemicool (historia del descubrimiento, "two marked violet lines")'],
+[4,14,32,'Ge','Germanio','#c9a876','amarillo a pardo (GeO)','baja','No aparece en la lista de ensayos a la llama de CAMEO/CRC (la misma que cubre Na, K, Cu...), por lo que no hay emisión real conocida. El óxido de germanio(II) se describe como amarillo o pardo en una única fuente; el GeO2, más común, es blanco, de ahí la confianza baja.','Blog especializado "Colors of Chemicals/Complexes"; CAMEO-MFA (confirma ausencia de Ge en su lista)'],
+[4,15,33,'As','Arsénico','#7ec8e3','azul pálido','alta','Compuestos volátiles de arsénico dan llama azulada.','CRC Handbook; CAMEO-MFA'],
+[4,16,34,'Se','Selenio','#1f6fd6','azul','alta','Color azul intenso, descrito como "azure" en una fuente fotográfica de referencia (Fundamental Photographs) — un azul vivo, no pálido, distinto del "azul pálido" con el que la CRC/CAMEO agrupa a plomo y arsénico bajo la misma etiqueta.','CRC Handbook; CAMEO-MFA; Fundamental Photographs ("Azure Flame Shows Presence Of Selenium")'],
+[4,17,35,'Br','Bromo','#e8e8e0','blanquecino / sin color dominante claro (mismo caso que el cloro)','media','Un estudio específico (Tech & Corliss, NIST, 1961/1963) midió el espectro real del Br I (bromo neutro) con un tubo de descarga sin electrodos, diseñado para evitar la contaminación que arruinaba mediciones anteriores. Encontraron más de 1000 líneas reales del átomo, pero en el rango de presión útil aparece "un fondo molecular" (bandas de Br2) que ocupa toda la región visible, y a menor presión el tubo se ve directamente blanco. Hay emisión real y bien medida, pero, al igual que el cloro, la suma de tantas líneas y bandas da blanquecino, sin un color dominante.','Tech & Corliss, "Wavelengths and Intensities in the First Spectrum of Bromine", NIST J. Res. 65A (1961) y Tech, 67A (1963)'],
+[4,18,36,'Kr','Kriptón','#dcebd8','blanco verdoso / amarillento pálido','media','Descrito de forma algo variable entre fuentes (blanco, gris o verdoso pálido) según pureza del gas. No hay alternativa de absorción: el kriptón apenas forma compuestos (solo KrF2 en condiciones extremas), y ese compuesto también es blanco/incoloro.','Fuentes técnicas de iluminación de gas noble'],
+[5,1,37,'Rb','Rubidio','#9c1350','rojo oscuro / rojo-violáceo','media','Bunsen y Kirchhoff lo descubrieron en 1861 por dos líneas rojo oscuras (de ahí "rubidus" = rojo intenso). Algunas fuentes agrupan su ensayo a la llama junto al violeta de K/Cs.','Descubrimiento espectroscópico de Bunsen/Kirchhoff; nota de discrepancia con CAMEO-MFA'],
+[5,2,38,'Sr','Estroncio','#ff1f2d','rojo escarlata','alta','Base de los fuegos artificiales rojos.','CRC Handbook; CAMEO-MFA'],
+[5,3,39,'Y','Itrio','','','ausente','El itrio(III), Y3+, no tiene electrones d (d0), igual que su vecino Sc3+: Y2O3 y sus sales son blancas de forma consistente. Color confirmado como ausente. En emisión, mismo caso que el escandio: hay líneas espectrales reales en llama analítica especializada, pero sin color perceptible descrito en ninguna fuente.','Curry, "Analytical Applications of the Flame Spectra of the Rare Earth Elements and Scandium" (OSTI)'],
+[5,4,40,'Zr','Zirconio','','','ausente','El zirconio(IV), Zr4+, es d0 (sin electrones d): ZrO2 y sus sales son blancas de forma consistente, tal y como aparecen en circonitas y gemología. Color confirmado como ausente. En emisión, sin ensayo a la llama estándar documentado ni color perceptible descrito en ninguna fuente consultada.',''],
+[5,5,41,'Nb','Niobio','','','ausente','El niobio(V), Nb5+, es d0 (sin electrones d): Nb2O5 y sus sales más comunes son blancas. Color confirmado como ausente en su estado de oxidación habitual. En emisión, sin ensayo a la llama estándar documentado ni color perceptible descrito en ninguna fuente consultada.',''],
+[5,6,42,'Mo','Molibdeno','#1a4d8f','azul intenso ("azul de molibdeno", complejos de valencia mixta Mo5+/Mo6+) — absorción; su emisión real es amarillo-verdosa','media','El molibdeno tiene dos colores reales y distintos (ninguno blanco), como el mercurio. Por emisión, el ensayo a la llama está muy bien documentado —hasta con la longitud de onda exacta, 551 nm, en problemas de libro de texto de química general— y da amarillo-verdoso. Por absorción, el color más célebre es el "azul de molibdeno": complejos de polioxometalato de valencia mixta Mo(V)/Mo(VI), un fenómeno con nombre propio usado en química analítica (detección de fosfatos) y como pigmento histórico, comparable al azul de Prusia. No coinciden, así que no es un caso "A+E"; se muestra el azul por ser el más icónico, con el amarillo-verde de la llama documentado aparte. (El óxido simple MoO3 es casi blanco/pálido y no es la referencia útil aquí.)','Ebbing, "General Chemistry" (problema con longitud de onda exacta, 551 nm); Wikipedia "Molybdenum blue"'],
+[5,7,43,'Tc','Tecnecio','#8f2020','rojo (TcCl4); su tricloruro es negro','baja','Elemento sintético/radiactivo, pero sus cloruros están bien caracterizados en Wikipedia: TcCl4 es un sólido rojo, TcCl3 y TcCl2 son negros. Se marca confianza baja por ser un compuesto poco habitual y no un color de referencia "de marca".','Wikipedia (Technetium chloride, Technetium(III) chloride)'],
+[5,8,44,'Ru','Rutenio','#f2d33c','amarillo (RuO4)','media','El tetróxido de rutenio, RuO4, es un sólido volátil amarillo (a menudo se ve negro por impurezas). Sus cloruros (RuCl3) son en cambio verde oscuro o negro, por eso se marca confianza media en vez de alta.','Wikipedia (Ruthenium tetroxide)'],
+[5,9,45,'Rh','Rodio','#d6395a','rojo rosado','alta','El propio nombre "rodio" viene del griego "rhodon" (rosa), elegido por William Hyde Wollaston en 1803 precisamente por el intenso color rojo-rosado de sus sales (p. ej. Na3RhCl6, cristales rojo brillante) durante su descubrimiento.','ChemTalk (historia del descubrimiento de Wollaston); WebElements (rhodium trichloride)'],
+[5,10,46,'Pd','Paladio','#a35c3f','rojo pardo (PdCl2)','media','No produce color de llama (documentado explícitamente), pero su sal más común, el cloruro de paladio(II), es un sólido rojo-pardo y da disoluciones pardas; otras sales pueden ser amarillas, verde oliva o rojas según el ligando.','Wikipedia "Flame test" (ausencia de color de llama); blog especializado "The Colors of Chemicals/Complexes" (LanthanumK)'],
+[5,11,47,'Ag','Plata','#f4c542','amarillo / ámbar ("tinte de plata")','media','No produce color de llama (documentado explícitamente), pero sí un color muy conocido en vidriería: el "silver stain" o "tinte de plata" —nanopartículas de plata metálica formadas dentro del vidrio— da un amarillo/ámbar translúcido, técnica clásica de los vitrales medievales.','Wikipedia "Flame test" (ausencia de color de llama); técnica de "silver stain" en vitrales'],
+[5,12,48,'Cd','Cadmio','#f7e017','amarillo intenso (CdS, "amarillo de cadmio")','alta','El sulfuro de cadmio es el clásico pigmento/colorante "amarillo de cadmio", muy usado en vidrio, cerámica y pintura. Combinado con selenio (sulfoseleniuro de cadmio) da en cambio el "rojo de cadmio". El ensayo a la llama de sus sales se describe aparte como rojo ladrillo, más débil y menos citado que el color del CdS.','Pigmento "amarillo/rojo de cadmio" en química industrial; CAMEO-MFA (dato secundario del ensayo a la llama)'],
+[5,13,49,'In','Indio','#4b3f8f','índigo / azul violáceo','alta','El nombre "indio" proviene precisamente de la línea espectral azul índigo con la que fue descubierto en 1863.','Historia del descubrimiento (Reich y Richter, espectroscopia)'],
+[5,14,50,'Sn','Estaño','#3f6fd9','azul (ensayo a la llama de Meissner)','media','El "ensayo de llama de Meissner" para estaño es un procedimiento analítico clásico y bien documentado (revista Bunseki Kagaku, con estudios de seguimiento): al calentar SnCl4 volatilizado con HCl concentrado en un mechero Bunsen aparece una llama azul característica, corroborada de forma independiente en SnCl2 ("azul a rosa"). Por absorción, en cambio, el estaño se mantiene mayoritariamente incoloro: de los ocho halogenuros de estaño, "solo los yoduros están coloreados" según Wikipedia. Como la emisión sí es un color real (azul) y la absorción es blanca, se prioriza aquí la emisión.','Bunseki Kagaku 5(10), 559 (2009), "Flame Color Test for Tin" (test de Meissner); fuente fotográfica independiente (SnCl2 "azul a rosa"); Wikipedia (halogenuros de estaño, para el dato de absorción)'],
+[5,15,51,'Sb','Antimonio','#e8b84b','amarillo a rojo (según el compuesto)','media','El antimonio está en la lista de ensayos a la llama CAMEO/CRC ("verde débil"), a diferencia de sus vecinos germanio y bismuto. Como esa emisión es débil y poco distintiva frente al vívido "amarillo de Nápoles" (antimoniato de plomo, pigmento clásico de vidrio y cerámica), se prioriza aquí la absorción, igual que en mercurio o molibdeno.','FTLOScience (colorante en vidrio); CAMEO-MFA ("verde débil", emisión confirmada pero deprioritzada)'],
+[5,16,52,'Te','Telurio','#8fd3a0','verde pálido','baja','Documentado de forma menos consistente que otros metaloides de su grupo.','Manuales analíticos generales'],
+[5,17,53,'I','Yodo','#7d3c98','violeta','media','El violeta del vapor de I2 es el color del elemento puro (absorción de la molécula I2, análogo al cobre metálico rojizo), no el de una sal: los ioduros simples (NaI, KI) son incoloros como los demás haluros, así que no cuenta como absorción según el criterio de esta tabla. La base real de esta casilla es la emisión, confirmada de forma independiente en tubo de descarga, con líneas azul-violeta bien documentadas sobre un fondo continuo verde-rojo — coincidencia con el color elemental, no un caso "A+E".','atomic-spectra.net (líneas azul-violeta del yodo en tubo de descarga); ioduros de metales alcalinos, incoloros'],
+[5,18,54,'Xe','Xenón','#6d83e0','azul-lavanda','media','Descrito como azul o azul-grisáceo según la fuente.','Fuentes técnicas de iluminación de gas noble'],
+[6,1,55,'Cs','Cesio','#2f9ed8','azul cielo','alta','Su propio nombre, "caesius" (latín: azul cielo), proviene de las dos líneas azules con las que Bunsen y Kirchhoff lo descubrieron en 1860. Algunas fuentes lo agrupan con el violeta de K/Rb.','Etimología y descubrimiento espectroscópico; nota de discrepancia con CAMEO-MFA'],
+[6,2,56,'Ba','Bario','#8fbf4a','verde manzana','alta','Ensayo muy característico, usado también en fuegos artificiales verdes.','CRC Handbook; CAMEO-MFA'],
+[6,3,71,'Lu','Lutecio','','','ausente','El lutecio(III), Lu3+, tiene la capa 4f completamente llena (4f14): no hay ningún electrón f disponible para transiciones, por lo que Lu2O3 y sus sales son blancas. Colocado aquí (grupo 3, bajo Y) en vez de en la fila de lantánidos, siguiendo la convención IUPAC recomendada Sc-Y-Lu-Lr, para no duplicar el elemento. En emisión, hay líneas espectrales reales en llama analítica especializada (mismo estudio que cubre el resto de tierras raras), pero sin color perceptible descrito en ninguna fuente.','Curry, "Analytical Applications of the Flame Spectra of the Rare Earth Elements and Scandium" (OSTI)'],
+[6,4,72,'Hf','Hafnio','','','ausente','El hafnio(IV), Hf4+, es d0, igual que su gemelo químico el circonio: HfO2 y sus sales son blancas. Color confirmado como ausente. Se descubrió por espectroscopia de rayos X (ley de Moseley, Coster y Hevesy 1923), no por una línea de color visible — un tipo de emisión distinto (rayos X, invisible) al que usa esta tabla.','Coster & Hevesy (1923), descubrimiento por espectroscopia de rayos X'],
+[6,5,73,'Ta','Tántalo','','','ausente','El tántalo(V), Ta5+, es d0: Ta2O5 y sus sales son blancas. Color confirmado como ausente. En emisión, sin ensayo a la llama estándar documentado ni color perceptible descrito en ninguna fuente consultada.',''],
+[6,6,74,'W','Wolframio','#4a8f5c','verde (perla de bórax en llama reductora)','media','El color se observa en el ensayo clásico de la perla de bórax con WO3, no en un ensayo a la llama directo.','CAMEO-MFA'],
+[6,7,75,'Re','Renio','#7a2020','rojo oscuro (ReCl3)','baja','El renio en su estado más común (Re7+, ReO4-) es prácticamente incoloro; pero el tricloruro ReCl3, un compuesto bien caracterizado, es un sólido rojo oscuro (el tetracloruro ReCl4 es negro).','Fuente técnica sobre cloruros metálicos (tabla de contaminantes multivalentes)'],
+[6,8,76,'Os','Osmio','#e8dc7a','amarillo pálido (OsO4)','media','El tetróxido de osmio, muy usado como agente de tinción en microscopía por su capacidad de oxidar tejidos (ennegreciéndolos al reducirse), es en sí mismo un sólido amarillo pálido volátil. Sus cloruros son en cambio rojo oscuro o negros.','Wikipedia (Osmium tetroxide, compuesto análogo al RuO4); blog "The Colors of Chemicals/Complexes"'],
+[6,9,77,'Ir','Iridio','#2f6b45','verde oscuro (IrCl3 trihidratado)','media','El tricloruro de iridio hidratado, la sal de partida más habitual en química del iridio, es un sólido verde oscuro higroscópico bien documentado en Wikipedia; la forma anhidra puede ser parda o roja según la fase.','Wikipedia (Iridium(III) chloride)'],
+[6,10,78,'Pt','Platino','#6b7a3a','verde oliva (PtCl2)','baja','Sigue sin producir color de llama (documentado explícitamente), pero su cloruro(II) más común es un sólido verde oliva bien caracterizado; el cloruro(III) es negro verdoso.','Wikipedia "Flame test" (ausencia de llama); fuente técnica sobre cloruros metálicos'],
+[6,11,79,'Au','Oro','#c1121f','rojo rubí intenso (oro coloidal)','alta','El "vidrio rubí de oro" (llamado también Púrpura de Cassius) se conoce desde el siglo XVII: nanopartículas de oro coloidal dispersas en el vidrio dan un rojo profundo e inconfundible. Es de los efectos de coloración más antiguos y mejor documentados de toda la química del vidrio. No produce, en cambio, color de llama (documentado explícitamente).','Púrpura de Cassius / vidrio rubí de oro, historia de la química del vidrio; Wikipedia "Flame test" (ausencia de color de llama)'],
+[6,12,80,'Hg','Mercurio','#a52a2a','rojo (HgS, cinabrio/bermellón) — absorción; su emisión real es azul-verdosa','media','La emisión real del mercurio está dominada por líneas verde (546 nm, un estándar internacional de calibración óptica), azul (436 nm) y violeta — tan ausente de rojo que las lámparas de vapor de mercurio son famosas por hacer que los objetos rojos se vean caqui o negros. Lo que sí es genuinamente rojo es una sal: el sulfuro de mercurio(II), HgS —cinabrio en mineral, bermellón como pigmento— es uno de los rojos más famosos e históricos que existen (usado desde el Neolítico). Es un caso con dos colores reales y distintos (ninguno blanco); se muestra el rojo por ser el más icónico y reconocible, con la emisión verde-azulada documentada aparte.','Wikipedia/fuentes técnicas de lámparas de vapor de mercurio (líneas 436/546/577-579 nm, mal rendimiento del rojo); Chemistry World, Met Museum (HgS cinabrio/bermellón)'],
+[6,13,81,'Tl','Talio','#3cb371','verde','alta','El nombre "talio" viene del griego "thallós" (brote verde), por la brillante línea verde con la que fue descubierto en 1861.','Etimología y descubrimiento espectroscópico (Crookes)'],
+[6,14,82,'Pb','Plomo','#a9c9e0','azul pálido','alta','Comparte etiqueta de "azul pálido" con el arsénico en la fuente original (CRC Handbook / CAMEO-MFA), y es también el tono más cercano entre los códigos de color usados en esta tabla.','CRC Handbook; CAMEO-MFA'],
+[6,15,83,'Bi','Bismuto','#f5e6a8','amarillo pálido (Bi2O3)','media','No aparece en la lista de ensayos a la llama de CAMEO/CRC, por lo que no hay emisión real conocida. El óxido de bismuto es amarillo pálido, base del pigmento "amarillo de bismuto" (bismuto-vanadato); otros compuestos varían mucho (BiCl3 blanco, BiI3 negro).','Blog "Colors of Chemicals/Complexes"; patentes de pigmento de amarillo de bismuto; CAMEO-MFA (confirma ausencia de Bi en su lista)'],
+[6,16,84,'Po','Polonio','#c41e3a','rojo rubí (PoCl2) — absorción; sin emisión propia confirmada','media','Ortner & Salim (Nature, 1952) fotografiaron el espectro visible de una muestra de polonio separando superficie y gas ionizado, y en ninguna posición detectaron ninguna línea atribuible al propio átomo (todo fue oxígeno o nitrógeno). Por absorción, en cambio, sí hay un dato real y bien documentado: el dicloruro de polonio, PoCl2, se describe como un sólido "rojo rubí" — el mismo tipo de cromóforo que el "vidrio rubí" de oro o cobre. Otros compuestos varían: PoO2 amarillo pálido, PoCl4 entre amarillo y escarlata según la fuente (con vapores que pasan de pardo-púrpura a azul-verde al calentar). Se muestra el rojo rubí por ser el más específico y consistente.','Ortner & Salim, Nature 169, 1060 (1952); Wikipedia (Polonium dichloride: "ruby-red solid"); WebElements (PoO2, PoCl4)'],
+[6,17,85,'At','Astato','','','none','No hay ni emisión ni absorción conocidas. Nunca se ha observado ni medido astato en cantidad suficiente para determinar ningún color (su isótopo más estable dura ~8 horas y el inventario mundial en un momento dado es de nanogramos dispersos). Sus compuestos se estudian solo con técnicas de trazador radiactivo, en disoluciones de concentración menor a 10^-10 mol/L, usando yodo como "portador" para poder filtrar/precipitar algo — nunca se ha visto un sólido de astato de ningún color. Cualquier color que circula por internet (vapor púrpura, negro metálico, resplandor azul) es extrapolación teórica por analogía con yodo/polonio, etiquetada como tal en las propias fuentes que lo predicen, no una observación real.','Wikipedia "Astatine compounds" (estudiado solo por trazador, <10^-10 mol/L); biologyinsights.com y otras fuentes que confirman explícitamente que nunca se ha observado ("never been directly observed")'],
+[6,18,86,'Rn','Radón','#8a2f6b','rojo-violáceo / magenta (líneas reales del átomo: violeta-azul 416-460 nm + rojo 705-745 nm)','media','El espectro de emisión atómica real del radón, documentado con longitudes de onda concretas, combina líneas violeta-azules (416-460 nm) y rojas (705-745 nm) que, sumadas, dan un tono violeta-rojizo/magenta intenso, de forma similar a como el hidrógeno da rosa-magenta al combinar su línea roja con las azules. Este dato de espectro atómico real es distinto del resplandor de aire ionizado por desintegración radiactiva, un fenómeno no atribuible al átomo en sí. Confianza media porque describe el resultado de un tubo de descarga que rara vez se ha hecho en la práctica por la dificultad de manejar radón puro, aunque las líneas espectrales en sí son datos atómicos reales.','biologyinsights.com "What Color Does Radon Glow and Why?" (distingue explícitamente espectro atómico real vs. resplandor de aire ionizado)'],
+[7,1,87,'Fr','Francio','','','none','No hay ni emisión ni absorción conocidas. Por absorción, el único compuesto con datos, el cloruro FrCl, se describe en Wikipedia como sólido blanco "predicho" (predicted), no observado: nunca ha existido suficiente francio junto para verlo, solo se co-precipita en trazas junto a sales de cesio. Por emisión, a diferencia de Rb/Cs/In/Tl/Ga, el francio no se descubrió por una línea espectral de color: lo descubrió Marguerite Perey en 1939 por radioquímica, como producto de descomposición del actinio, no por espectroscopia óptica. Existen experimentos modernos de física atómica que atrapan átomos de francio con láser sintonizado a una transición roja (~718 nm), pero es una línea láser específica y angosta en un experimento de trampa magneto-óptica, no un color de llama o descarga visible a simple vista.','Wikipedia (Francium chloride: "predicted to be a white solid"); Wikipedia/Grokipedia (Francium compounds: solo co-precipitación en trazas); historia del descubrimiento de Perey (radioquímico, no espectroscópico); física atómica de trampas de Fr (transición láser ~718 nm)'],
+[7,2,88,'Ra','Radio','#e0304f','carmín / rojo intenso','alta','Documentado directamente: "las sales de radio arden con un color de llama carmín" — igual de citable que sus vecinos del grupo (Ca, Sr). El resplandor azul-verdoso que hizo famoso al radio en la oscuridad (pinturas luminiscentes de relojes) es un fenómeno distinto: no es color de llama, sino luminiscencia inducida por su propia radiactividad sobre un fósforo como el ZnS.','CAMEO-MFA (cita Materials Handbook, McGraw-Hill 1971); Vedantu (química de metales alcalinotérreos)'],
+[7,3,103,'Lr','Laurencio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica. Colocado aquí (grupo 3, bajo Lu) en vez de en la fila de actínidos, siguiendo la convención IUPAC recomendada Sc-Y-Lu-Lr, para no duplicar el elemento.',''],
+[7,4,104,'Rf','Rutherfordio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,5,105,'Db','Dubnio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,6,106,'Sg','Seaborgio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,7,107,'Bh','Bohrio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,8,108,'Hs','Hasio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,9,109,'Mt','Meitnerio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,10,110,'Ds','Darmstadtio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,11,111,'Rg','Roentgenio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,12,112,'Cn','Copernicio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,13,113,'Nh','Nihonio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,14,114,'Fl','Flerovio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,15,115,'Mc','Moscovio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,16,116,'Lv','Livermorio','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,17,117,'Ts','Teneso','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.',''],
+[7,18,118,'Og','Oganesón','','','none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.','']
+];
+
+// Lantánidos (57-71) y actínidos (89-103), fila aparte, sin datos fiables salvo Ce
+const lant = [57,58,59,60,61,62,63,64,65,66,67,68,69,70];
+const lantNames = ['Lantano','Cerio','Praseodimio','Neodimio','Prometio','Samario','Europio','Gadolinio','Terbio','Disprosio','Holmio','Erbio','Tulio','Iterbio'];
+const lantSym = ['La','Ce','Pr','Nd','Pm','Sm','Eu','Gd','Tb','Dy','Ho','Er','Tm','Yb'];
+
+const act = [89,90,91,92,93,94,95,96,97,98,99,100,101,102];
+const actNames = ['Actinio','Torio','Protactinio','Uranio','Neptunio','Plutonio','Americio','Curio','Berkelio','Californio','Einstenio','Fermio','Mendelevio','Nobelio'];
+const actSym = ['Ac','Th','Pa','U','Np','Pu','Am','Cm','Bk','Cf','Es','Fm','Md','No'];
+
+// Datos específicos de cada lantánido: color de su óxido/sal más citado, o del ensayo a la llama si aplica
+const lantData = {
+  La: [null,null,'ausente','El lantano(III), La3+, no tiene electrones f (configuración f0, como su análogo Sc3+/Y3+): La2O3 y sus sales son blancas de forma consistente. Color confirmado como ausente. En emisión, el lantano tiene una señal de llama "muy intensa" en espectrometría de absorción atómica según un manual técnico (Agilent), pero tampoco ahí se describe un color perceptible a simple vista, solo la intensidad de la señal para el instrumento.','Agilent, "Flame Atomic Absorption Spectrometry Method Development ePrimer"'],
+  Ce: ['#f0e050','amarillo','alta','Coincide el ensayo a la llama (amarillo, más débil que el del sodio) con el color tostado-amarillento del óxido CeO2 usado en vidriados y como colorante.','CAMEO-MFA (llama); cerámica industrial (CeO2, óxido tostado-amarillo)'],
+  Pr: ['#3cb371','verde (Pr2O3, Pr3+); amarillo intenso en uso industrial (Pr6O11 en vidriados)','alta','Su propio nombre significa "gemelo verde" (del griego prásios dídymos) por el color verde de sus sales Pr3+. En cambio, el óxido mixto usado industrialmente para vidrio y esmaltes da un amarillo muy limpio e intenso.','Wikipedia (Pr2O3, sólido verde claro); RSC periodic-table.rsc.org (uso industrial amarillo)'],
+  Nd: ['#9b7fc7','violeta / lavanda (cambia de tono con el tipo de luz)','alta','Muy documentado: el "vidrio de neodimio" usado por sopladores de vidrio y en gafas "didymium" es lavanda/violeta, y vira de azul a púrpura o gris según la iluminación (natural, fluorescente, LED).','Ceramic Arts Network (glaseados con óxido de neodimio); vidrio de neodimio en sopladores de vidrio'],
+  Pm: ['#ff8fa3','rosa','alta','El ion Pm3+ es rosa, documentado explícitamente (análogo a sus vecinos Nd3+ y Sm3+). Sus sales sólidas además brillan tenuemente en la oscuridad por su intensa radiactividad, un fenómeno distinto del color en sí.','Wikipedia (Promethium compounds): "the color of the ion is pink"'],
+  Sm: ['#f5e58c','amarillo pálido','alta','El óxido Sm2O3 y la mayoría de sus sales Sm3+ son de un amarillo pálido consistente entre varias fuentes.','Wikipedia (Samarium(III) oxide); Chemicool'],
+  Eu: ['#f7d9e3','blanco con un tinte rosado muy pálido (color débil)','baja','El óxido Eu2O3 se describe como "blanco a rosa pálido"; es un color muy poco intenso comparado con sus vecinos. No existe un ensayo a la llama de lantánidos estandarizado para comparar (no es una técnica analítica común para tierras raras), así que no hay alternativa de emisión que evaluar.','Wikipedia (Europium(III) oxide)'],
+  Gd: [null,null,'ausente','El gadolinio(III), Gd3+, tiene la capa 4f exactamente semillena (4f7, todos los espines paralelos): esta configuración especialmente estable no da transiciones f-f visibles, por lo que Gd2O3 y sus sales son blancas. Color confirmado como ausente por motivos electrónicos bien entendidos, igual que La3+ y Lu3+. En emisión, se ha usado en espectrometría de llama de plasma-jet junto a La e Y, con líneas reales medidas, pero sin color perceptible descrito.','ScienceDirect, "Flame spectra of Sc, Y and rare-earth elements"'],
+  Tb: ['#6b4a2f','pardo oscuro / casi negro (óxido mixto Tb4O7); el ion Tb3+ puro es casi incoloro','media','El óxido comercial de terbio (mezcla de valencias, Tb4O7) es pardo oscuro; en cambio las sales Tb3+ simples son casi incoloras. Se prioriza aquí el óxido, que es la forma más citada y con la que realmente se identifica visualmente el elemento.','Química de óxidos de tierras raras'],
+  Dy: ['#c8d89a','verde amarillento pastel','media','El óxido Dy2O3 se describe consistentemente como un polvo pastel verde-amarillento.','Wikipedia (Dysprosium(III) oxide)'],
+  Ho: ['#f2c14e','amarillo pálido ("albaricoque"); cambia a rosa intenso bajo luz fluorescente','alta','Uno de los casos mejor documentados de cambio de color según el tipo de luz: el óxido y el cloruro de holmio se ven amarillo pálido en luz natural y rosa brillante en luz fluorescente.','Wikipedia (Holmium(III) oxide, Holmium(III) chloride)'],
+  Er: ['#f4a6c1','rosa pastel','alta','El óxido Er2O3 tiene un color rosa pastel distintivo, muy citado en la industria del vidrio y la cerámica como colorante rosa de tierras raras.','PIDC (Rare Earths & Inorganics); proveedores de materiales de tierras raras'],
+  Tm: ['#a8d5b0','verde pálido','alta','El óxido Tm2O3 se documenta directamente en Wikipedia como "un compuesto cristalino verde pálido".','Wikipedia (Thulium(III) oxide)'],
+  Yb: [null,null,'ausente','El iterbio(III), Yb3+, tiene la capa 4f casi llena (4f13, solo falta un electrón): sus transiciones f-f caen fuera del visible, por lo que Yb2O3 y sus sales son blancas/incoloras. Color confirmado como ausente. En emisión, hay líneas espectrales reales en llama analítica especializada, pero sin color perceptible descrito en ninguna fuente.','Curry, "Analytical Applications of the Flame Spectra of the Rare Earth Elements and Scandium" (OSTI)'],
+  Lu: [null,null,'ausente','El lutecio(III), Lu3+, tiene la capa 4f completamente llena (4f14, como un "gas noble" interno): no hay ningún electrón f disponible para transiciones, por lo que Lu2O3 y sus sales son blancas. Color confirmado como ausente, el caso más claro de todo el bloque f.','']
+};
+function lantEntry(i){
+  const z = lant[i], sym = lantSym[i], name = lantNames[i];
+  const d = lantData[sym];
+  return [8, i+4, z, sym, name, d[0]||'', d[1]||'', d[2], d[3], d[4]];
+}
+
+// Datos específicos de cada actínido documentado (química de disolución/óxido); el resto queda sin dato por ser
+// demasiado radiactivo, escaso o sintético para tener un color macroscópico fiable y consensuado
+const actData = {
+  Ac: [null,null,'ausente','El actinio(III), Ac3+, es f0 (sin electrones f), como su análogo La3+: por electrónica debería ser incoloro. El brillo azul que le da fama proviene del aire circundante ionizado por las partículas energéticas emitidas — el mismo fenómeno que en polonio y radón, no una emisión del propio átomo. Su nombre ("aktis", griego: rayo/haz) se refiere a su radiactividad en general, no al color azul en concreto. Es además extremadamente escaso, así que la ausencia de color es sobre todo una extrapolación por analogía electrónica.',''],
+  Th: [null,null,'ausente','El torio(IV), Th4+, es f0 (sin electrones f disponibles, análogo a Ce4+ o Hf4+): ThO2 y sus sales son consistentemente blancas. En las mantillas de gas (lámparas Welsbach) no hay torio puro, sino ~99% ThO2 + 1% CeO2, específicamente porque el ThO2 solo no brilla tanto — el cerio "promueve" la emisión. El mecanismo (candoluminiscencia) lleva debatiéndose desde el siglo XIX, y estudios recientes concluyen que ni las mantillas ni la luz de cal implican una emisión electrónica real, sino "emisión térmica selectiva" del material cerámico — coherente con que el Th4+, al ser f0, no tenga ninguna transición propia que emitir. El blanco de la mantilla no es, por tanto, la emisión del torio.',''],
+  Pa: ['#e8d84a','amarillo (PaCl5)','media','Hay compuestos de protactinio bien caracterizados pese a su escasez. El pentacloruro PaCl5 (el estado de oxidación +5, el más estable y común del elemento) forma cristales amarillos, según Wikipedia. Otros halogenuros varían de color: PaCl4 chartreuse/verde-amarillento, PaBr5 rojo, PaF4 pardo-rojizo — coherente con la variabilidad típica de los actínidos según estado de oxidación.','Wikipedia (Protactinium(V) chloride: "yellow monoclinic crystals"); Wikipedia (Protactinium compounds, tabla de halogenuros)'],
+  U: ['#c9d94a','amarillo-verdoso intenso; fluorescencia verde brillante bajo luz ultravioleta','alta','El "vidrio de uranio" (vaseline glass / Depression glass), coloreado por el ion uranilo UO2^2+, es uno de los vidrios coloreados más famosos e inconfundibles que existen, y además fluoresce con un verde vívido bajo luz UV.','Vidrio de uranio (vaseline/Depression glass); química del ion uranilo'],
+  Np: ['#4a7a6b','variable según estado de oxidación (verde-azulado en Np(V), la forma más común en disolución acuosa)','media','La química del neptunio en disolución tiene un color distinto por cada estado de oxidación (documentado en química nuclear), de forma similar al plutonio; se muestra aquí el más frecuente en agua.','Química de disolución de actínidos (Seaborg y colaboradores; ScienceDirect)'],
+  Pu: ['#8a6d3b','sin color único: cambia radicalmente con el estado de oxidación (Pu3+ azul-lavanda, Pu4+ pardo-amarillento, Pu6+ rosa-anaranjado)','media','El plutonio es célebre en química nuclear por tener hasta 4-5 colores de disolución distintos y visibles simultáneamente según su estado de oxidación. No existe un único "color del plutonio"; el tono mostrado es un promedio orientativo, no un dato preciso.','Química de disolución de actínidos (Seaborg; Los Alamos National Laboratory; Stanford Advanced Materials)'],
+  Am: ['#f4a6c1','rosa (Am3+)','media','El ion Am3+ es rosa, de forma análoga a sus vecinos lantánidos con configuración electrónica similar (Pm3+, Sm3+).','Química de disolución de actínidos'],
+  Cf: ['#5cb85c','verde (Cf3+ en disolución); amarillo-verdoso (compuestos sólidos como CfF3, Cf2O3)','alta','Muy bien documentado pese a su escasez: la Kirk-Othmer Encyclopedia of Chemical Technology cita explícitamente "Cf3+ es verde" en disolución ácida, y varios compuestos sólidos (fluoruro, óxido) son amarillo-verdosos según Wikipedia.','PubChem (cita Kirk-Othmer Encyclopedia); Wikipedia (Californium(III) fluoride, Californium(III) oxide)'],
+  Bk: ['#c9d94a','amarillo-verdoso','alta','Varios compuestos de berkelio bien caracterizados (Bk2O3, BkF3, BkBr3) se describen de forma consistente como sólidos amarillo-verdosos.','Wikipedia (Berkelium(III) oxide, fluoride, bromide)'],
+  Cm: ['#3fb05a','verde brillante (oxalato de curio, Cm2(C2O4)3)','media','Se han sintetizado sales de curio específicamente para caracterizar su color. Los halogenuros simples (CmCl3, CmF3, CmI3) son blancos o casi incoloros, pero el oxalato de curio, una sal bien caracterizada, se describe explícitamente como un sólido "verde brillante" — un color real y documentado, poco soluble en agua.','Wikipedia (Curium oxalate): "bright green solid"'],
+  Es: ['#e8873f','naranja (EsCl3)','media','El tricloruro de einstenio, EsCl3, está específicamente caracterizado y documentado como naranja en la tabla de compuestos de einstenio de Wikipedia. Otros halogenuros varían: EsBr3 amarillo, EsI3 ámbar, Es2O3 incoloro — variabilidad típica según el anión.','Wikipedia (Einsteinium compounds, tabla de halogenuros: EsCl3 "Orange")'],
+  Fm: [null,null,'none','Elemento sintético producido átomo a átomo; nunca observado en cantidad macroscópica.',''],
+  Md: [null,null,'none','Elemento sintético producido átomo a átomo; nunca observado en cantidad macroscópica.',''],
+  No: [null,null,'none','Elemento sintético producido átomo a átomo; nunca observado en cantidad macroscópica.',''],
+  Lr: [null,null,'none','Elemento sintético, vida media muy corta; nunca observado en cantidad macroscópica.','']
+};
+function actEntry(i){
+  const z = act[i], sym = actSym[i], name = actNames[i];
+  const d = actData[sym];
+  return [9, i+4, z, sym, name, d[0]||'', d[1]||'', d[2], d[3], d[4]];
+}
+for(let i=0;i<14;i++){ els.push(lantEntry(i)); els.push(actEntry(i)); }
+
+// Mecanismo del color mostrado en cada casilla, clasificado aparte para no repetir estructura en cada fila:
+// 'E' = emisión (llama, línea espectral, quimioluminiscencia, tubo de descarga)
+// 'A' = absorción (color de un sólido/disolución — vidrio, óxido, sal — por transición d-d o f-f)
+// 'EA' = ambos mecanismos documentados y coinciden en el mismo color (caso raro, ej. cobre)
+const mechMap = {
+  // emisión
+  H:'E', He:'E', Li:'E', Be:'E', B:'E', C:'E', N:'E', O:'E', Ne:'E', Na:'E', Mg:'E', Al:'E', Si:'E', Br:'E',
+  P:'E', S:'E', Cl:'E', Ar:'E', K:'E', Ca:'E', Zn:'E', Ga:'E', As:'E', Se:'E', Kr:'E', Rb:'E', Sr:'E',
+  In:'E', Te:'E', I:'E', Sn:'E', Xe:'E', Cs:'E', Ba:'E', Tl:'E', Pb:'E', Rn:'E', Ra:'E',
+  // ambas (coinciden)
+  Cu:'EA', Ce:'EA',
+  // absorción
+  Ti:'A', V:'A', Cr:'A', Mn:'A', Fe:'A', Co:'A', Ni:'A', Ge:'A', Tc:'A', Ru:'A', Rh:'A', Pd:'A',
+  Ag:'A', Cd:'A', Sb:'A', W:'A', Re:'A', Os:'A', Ir:'A', Pt:'A', Au:'A', Bi:'A', Hg:'A', Mo:'A',
+  Pr:'A', Nd:'A', Pm:'A', Sm:'A', Eu:'A', Tb:'A', Dy:'A', Ho:'A', Er:'A', Tm:'A', Cf:'A', Bk:'A', Cm:'A',
+  U:'A', Np:'A', Pu:'A', Am:'A', Pa:'A', Es:'A', Po:'A'
+};
+const mechLabel = {E:'Emisión (llama / espectro)', A:'Absorción (color de sólido/disolución)', EA:'Ambas — coinciden'};
+
+// -------- RENDER --------
+const grid = document.getElementById('grid');
+const tooltip = document.getElementById('tooltip');
+
+// build 9-row grid (7 periods + 1 gap + 2 f-block rows), 18 cols
+const rowsMap = {}; // period -> array of cells by group
+els.forEach(e=>{
+  const [period, group] = e;
+  if(!rowsMap[period]) rowsMap[period] = {};
+  rowsMap[period][group] = e;
+});
+
+function makeCell(e){
+  const div = document.createElement('div');
+  if(!e){ div.className='cell empty'; return div; }
+  const [period, group, z, sym, name, color, colorLabel, conf, note, source] = e;
+  div.className = 'cell ' + (conf==='none' ? 'nodata' : '') + (conf==='ausente' ? ' nodata' : '');
+  if(color){
+    div.style.background = color;
+    div.classList.add('colored');
+  }
+  if(conf==='ausente') div.classList.add('conf-ausente');
+  else if(conf==='none') div.classList.add('conf-none');
+
+  div.innerHTML = `<span class="z">${z}</span><span class="sym">${sym}</span>`;
+  const mech = mechMap[sym];
+  if(mech && color){
+    if(mech==='A' || mech==='EA'){
+      const m = document.createElement('span');
+      m.className = 'mech-mark left mech-A';
+      m.textContent = 'A';
+      div.appendChild(m);
+    }
+    if(mech==='E' || mech==='EA'){
+      const m = document.createElement('span');
+      m.className = 'mech-mark right mech-E';
+      m.textContent = 'E';
+      div.appendChild(m);
+    }
+  }
+  div.addEventListener('mouseenter', (ev)=>showTip(ev, e));
+  div.addEventListener('mousemove', moveTip);
+  div.addEventListener('mouseleave', hideTip);
+  div.addEventListener('click', (ev)=>{ ev.stopPropagation(); showTip(ev, e); });
+  return div;
+}
+
+for(let period=1; period<=7; period++){
+  for(let g=1; g<=18; g++){
+    grid.appendChild(makeCell(rowsMap[period] ? rowsMap[period][g] : null));
+  }
+}
+// gap row
+const gapDiv = document.createElement('div');
+gapDiv.className='gap-row';
+grid.appendChild(gapDiv);
+// f-block rows (8 = lant, 9 = act), cols 1-3 empty label, 4-18 elements
+['8','9'].forEach(p=>{
+  const period = parseInt(p);
+  for(let g=1; g<=18; g++){
+    if(g<4){
+      const label = document.createElement('div');
+      if(g===1){
+        label.className='lant-label';
+        label.style.gridColumn = '1 / 4';
+        label.textContent = period===8 ? 'lantánidos →' : 'actínidos →';
+      } else { continue; }
+      grid.appendChild(label);
+    } else {
+      grid.appendChild(makeCell(rowsMap[period] ? rowsMap[period][g] : null));
+    }
+  }
+});
+
+function hexToRgb(hex){
+  if(!hex) return '';
+  const h = hex.replace('#','');
+  const r = parseInt(h.substring(0,2),16), g = parseInt(h.substring(2,4),16), b = parseInt(h.substring(4,6),16);
+  return `rgb(${r}, ${g}, ${b})`;
+}
+function showTip(ev, e){
+  const [period, group, z, sym, name, color, colorLabel, conf, note, source] = e;
+  const confText = {alta:'Confianza alta', media:'Confianza media', baja:'Confianza baja', ausente:'Color confirmado como ausente (incoloro)', none:'Sin dato fiable'}[conf];
+  const mech = mechMap[sym];
+  const mechHtml = mech ? `<div style="font-size:10px;font-weight:700;margin-bottom:4px;color:${mech==='A'?'#a390f0':(mech==='EA'?'#ffb066':'#ff8a3d')};">${mech==='EA' ? '⬤ Emisión + Absorción — coinciden' : (mech==='A' ? '◆ Absorción (color de sólido/disolución)' : '● Emisión (llama / espectro)')}</div>` : '';
+  const codeHtml = color ? `<div style="display:flex;align-items:center;gap:6px;font-size:10px;color:#8b93a3;margin:2px 0 6px;">
+      <span style="display:inline-block;width:12px;height:12px;border-radius:3px;background:${color};border:1px solid rgba(255,255,255,.3);"></span>
+      <span style="font-family:monospace;">${color.toUpperCase()} · ${hexToRgb(color)}</span>
+    </div>` : '';
+  tooltip.innerHTML = `
+    <div class="t-name">${name} <span style="color:#8b93a3;font-weight:400;font-size:12px;">(${sym}, Z=${z})</span></div>
+    ${mechHtml}
+    <div class="t-color">${colorLabel ? colorLabel : 'sin color asignado'} — ${confText}</div>
+    ${codeHtml}
+    <div class="t-note">${note}</div>
+    ${source ? `<div class="t-src">Fuente: ${source}</div>` : ''}
+  `;
+  tooltip.style.display='block';
+  moveTip(ev);
+}
+function moveTip(ev){
+  const x = ev.clientX, y = ev.clientY;
+  const vw = window.innerWidth, vh = window.innerHeight;
+  let left = x+16, top = y+16;
+  if(left + 300 > vw) left = x - 300;
+  if(top + 160 > vh) top = y - 160;
+  tooltip.style.left = left+'px';
+  tooltip.style.top = top+'px';
+}
+function hideTip(){ tooltip.style.display='none'; }
+document.body.addEventListener('click', hideTip);
+
+document.getElementById('foot').innerHTML = `
+  <b>Criterio (por prioridad):</b>
+  <ul style="margin:6px 0 10px 18px;padding:0;">
+    <li><b>A</b> = Absorción: color de una sal/óxido/disolución (transición d-d o f-f) — <u>nunca</u> el color del elemento puro (Cu metal es rojizo pero no cuenta; solo cuentan sus sales azules)</li>
+    <li><b>E</b> = Emisión real: llama, línea espectral, tubo de descarga, quimioluminiscencia. Nunca incandescencia térmica ni humo/niebla dispersando luz.</li>
+    <li><b>A+E</b> = coinciden en el mismo color. Solo 2 casos reales: Cu y Ce</li>
+    <li>Con dos colores distintos y uno blanco/incoloro → se muestra el no-blanco (ej. hierro, mercurio)</li>
+  </ul>
+  <b>Estructura:</b> Grupo 3 = Sc, Y, Lu, Lr (IUPAC); La/Ac solo abajo, al inicio de sus filas.<br><br>
+  <b>Casos con dos colores reales distintos (se muestra el más icónico, el otro en el tooltip):</b>
+  <ul style="margin:6px 0 10px 18px;padding:0;">
+    <li><b>Hierro:</b> A=rojo-marrón (herrumbre) · E=blanquecino (arco, sin color útil) → se muestra A</li>
+    <li><b>Mercurio:</b> A=rojo (HgS, cinabrio) · E=verde-azulado (546 nm) → se muestra A</li>
+    <li><b>Molibdeno:</b> A=azul ("azul de molibdeno", Mo5+/Mo6+) · E=amarillo-verdoso (551 nm, libro de texto) → se muestra A</li>
+    <li><b>Cloro / Bromo:</b> E=blanquecino en ambos (tubo de descarga con muchas líneas/bandas; sus sales son incoloras, así que no hay absorción alternativa)</li>
+  </ul>
+  <b>Ambos mecanismos dan blanco, sin alternativa (revisado):</b> Be, Al, Mg (sin electrones d), Kr (sin compuestos coloreados), Eu (sin ensayo a la llama de lantánidos).<br><br>
+  <b>Correcciones de incandescencia/dispersión confundida con emisión:</b> Carbono (naranja de vela = hollín, descartado → verde-azulado real, bandas de Swan) · Silicio (mismo patrón: naranja de la sílice ardiendo = partículas SiO2, descartado → azul pálido real, SiO*/SiH*/OH*) · Fósforo (blanco de combustión = humo disperso, descartado → verde-azulado real, PO/HPO) · Polonio y Radón (el resplandor azul era del aire ionizado, no del átomo — descartado en ambos como emisión propia; Radón sí tiene emisión real, rojo-violáceo; Polonio no tiene emisión propia, confirmado con fuente primaria de 1952, pero sí absorción real: PoCl2 rojo rubí) · Astato (nunca observado, no se extrapola) · Yodo (su violeta es del elemento puro, no de una sal — se mantiene solo por emisión real en tubo de descarga).<br><br>
+  <b>Discrepancias entre fuentes, señaladas:</b> Rb/Cs (colores de su descubrimiento) · Cd (llama vs. CdS) · Pr (ion vs. óxido industrial). Descartado por no corroborarse: "Pb = púrpura".<br><br>
+  <b>Fuentes clave:</b> CRC Handbook · CAMEO-MFA · química industrial de colorantes de vidrio/cerámica · Seaborg/LANL (actínidos) · etimologías de descubrimiento (Rb, Cs, In, Tl, Rh, V) · Ortner & Salim, Nature 169, 1060 (1952, polonio) · Kiess/Rubin/Moore, J. Res. NBS 65A (1961, arco de hierro) · Tech & Corliss, NIST J. Res. 65A/67A (bromo) · pigmento cinabrio/bermellón (HgS).
+`;
+
+// -------- EXPORTAR A PNG --------
+function loadHtml2Canvas(){
+  return new Promise((resolve, reject)=>{
+    if(window.html2canvas){ resolve(); return; }
+    const s = document.createElement('script');
+    s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+    s.onload = ()=>resolve();
+    s.onerror = ()=>reject(new Error('No se pudo cargar html2canvas'));
+    document.head.appendChild(s);
+  });
+}
+document.getElementById('exportBtn').addEventListener('click', async ()=>{
+  const btn = document.getElementById('exportBtn');
+  btn.disabled = true;
+  try{
+    await loadHtml2Canvas();
+    const target = document.getElementById('capture-area');
+    const canvas = await html2canvas(target, {backgroundColor:'#0b0d12', scale:2, useCORS:true});
+    const link = document.createElement('a');
+    link.download = 'color_elementos.png';
+    link.href = canvas.toDataURL('image/png');
+    link.click();
+  }catch(err){
+    alert('No se pudo generar la imagen: ' + err.message);
+  }finally{
+    btn.disabled = false;
+  }
+});
+</script>
+</body>
+</html>
